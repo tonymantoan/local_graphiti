@@ -1,7 +1,7 @@
 # What is this?
 I thought [Graphiti's](https://github.com/getzep/graphiti) temporal knowledge graph sounded pretty cool, but, out of the box it only uses ChatGPT and Claud. (You can setup the config so the OpenAI client points to any inference endpoint you want, but it will still try to use ChatGPT or Claud for tokenizing, and anyway depending the model you are using the prompts might not get formated correctly). I wanted to use for it my own local LLM application.
 
-After looking over the Graphiti's code, it seemed pretty straightforward to extend a few of the core classes to use a local model for inference and emdeddings. Those extended classes are here, along with an adapted version of their sample app to use them. I also have some notes here on getting all the prereqs set up.
+After looking over Graphiti's code, it seemed pretty straightforward to extend a few of the core classes to use a local model for inference and emdeddings. Those extended classes are here, along with an adapted version of their sample app to use them. I also have some notes here on getting all the prereqs set up.
 # TLDR
 Given the complexity of the prompts involved, I am surprised how well the local models actually did.  Ultimately they were either too inconsistent or too slow to be practical, but they're not far off! I have hope that newer, better trained, more compact models will be able to handle the work load on my hardware in the near future. For now I am pursing other options for my home grown AI assistant's long term memory system, but I'll likely return to this before long.
 
@@ -128,11 +128,10 @@ As I said above, I am surprised the local models did as well as they did with th
 Runtime -2 minutes.
 
 This one had the best overall results. It could complete the queries in a reasonably short amount of time, and the accuracy was usually pretty good. But Sometimes it would come up with incorrect or partial answers. At it's best it made this graph:
-picture of graph
+<img width="965" alt="magnum_12b_q8_1" src="https://github.com/user-attachments/assets/5348d8f4-f22f-4ea0-a7cb-106687c1d727" />
 
 But this is also one it came up with:
-picture of graph 2
-
+<img width="928" alt="magnum_12b_q8_2" src="https://github.com/user-attachments/assets/93f24264-56e2-43c1-b576-ac9b4e6b07b6" />
 
 ## Qwen 2.5 14B Q8
 Runtime -2 minutes.
@@ -140,15 +139,20 @@ Initially did a little better than Magnum, but kept wrongly invalidating edges, 
 
 ## Mixtral 8x7B Q4
 Runtime: ~10 minutes.
-Before adding the json grammar to the llama.cpp api call, I was surprised that this model generated a lot of invalid json. Even with the grammar, it sometimes didn't follow the requested schema. Overall, too slow and not accurate enough. But I also can't run larger quant size on my machine.
+Before adding the json grammar to the llama.cpp api call, I was surprised that this model generated a lot of invalid json. Even with the grammar, it sometimes didn't follow the requested schema. Overall, too slow and not accurate enough. But I also can't run larger quant size on my machine. It usually came up with a graph similar to this:
+<img width="966" alt="mixtral_8x7b_q4_grammar" src="https://github.com/user-attachments/assets/673f7e4d-eedc-4455-a9d6-ddc000a51c3e" />
+
 
 ## Mistral 22B Instruct Q8
 Runtime: ~7 minutes.
 This model did pretty well overall, aside from being slow on my machine. The main thing it whiffed on was identifying when edges are invalid and including date related facts. So the knowledge graph is decent, but it's not really able use Graphiti's temporal capabilities.
+<img width="970" alt="mistral-22b-q8" src="https://github.com/user-attachments/assets/b3b4a6bc-7004-4fe5-98da-b2988d3aee8c" />
+
 
 ## Nemotron-70B-Instruct-HF-IQ2_M
 Total sample app runtime: ~12 minutes.
-Even at Q2 this really pushed my machine to it's limits. I ran once with a couple other apps open (browser, discord, obsidian) and took over an hour to run. I didn't expect much out of a 2-bit model, but it showed the most comprehensive and accurate understanding of the prompts. Even this model struggled to come up with proper "invalid at" dates for edges.
+Even at Q2 this really pushed my machine to it's limits. I ran once with a couple other apps open (browser, discord, obsidian) and took over an hour to run. I didn't expect much out of a 2-bit model, but it showed the most comprehensive and accurate understanding of the prompts. Even this model struggled to dedupe nodes and come up with proper "invalid at" dates for edges.
+<img width="557" alt="nemotron_70b_q2" src="https://github.com/user-attachments/assets/6525f125-07ff-4dfc-998e-2ced98417463" />
 
 Interesting side note. Before I added the json grammer, this model took some prompts and reworked them into it's own set of instructions, broken into smaller steps, instead of returning the requested json. It even outputed the Mistral [INST] tags for each of its steps. It's output was pretty accurate in it's reasoning about the prompts, and seemed to identify all the relevant nodes and edges, but it wasn't usable by Graphiti.
 
@@ -158,7 +162,7 @@ Llama.cpp also supports json schemas when using json grammar. I would like to fo
 # Project Setup Notes
 
 ## Neo4J
-Neo4j Really pushes their desktop stuff (you need to sign up even for the free version), but you can get the headless community edition [here](https://neo4j.com/deployment-center/?ref=subscription#community). Scroll to 'Graph Database Self-Managed' and make sure 'community' is selected.
+Neo4j really pushes their desktop stuff (you need to sign up even for the free version), but you can get the headless community edition [here](https://neo4j.com/deployment-center/?ref=subscription#community). No need to sign up or create an account. Scroll to 'Graph Database Self-Managed' and make sure 'community' is selected.
 
 1. Unzipped to ~/apps/neo4j-community-5.24.1
 2. Used sdkman to install java correto 17
