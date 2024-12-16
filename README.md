@@ -126,6 +126,8 @@ https://huggingface.co/anthracite-org/magnum-v4-22b-gguf
 * [Qwen 2.5 14B](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/tree/main)
 * [Nemotron-70B-Instruct-HF-IQ2_M](https://huggingface.co/bartowski/Llama-3.1-Nemotron-70B-Instruct-HF-GGUF/tree/main)
 
+For comparison to the graphs below, [here are the Graphiti docs](https://help.getzep.com/graphiti/graphiti/adding-episodes) which show an ideal version of the graph that should be produced by the sample app.
+
 ## Magnum 12B_Q8
 Runtime -2 minutes.
 
