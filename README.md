@@ -194,4 +194,4 @@ For larger models I needed to give the GPU more of the unified memory then it ge
 I added a file `/etc/sysctl.conf` and added the line
 `iogpu.wired_limit_mb=28672`
 
-To do it as a one-off you can just run the command `sudo ysctl iogpu.wired_limit_mb=28672`
+To do it as a one-off you can just run the command `sudo sysctl iogpu.wired_limit_mb=28672`
