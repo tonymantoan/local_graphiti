@@ -5,6 +5,11 @@ After looking over Graphiti's code, it seemed pretty straightforward to extend a
 # TLDR
 Given the complexity of the prompts involved, I am surprised how well the local models actually did.  Ultimately they were either too inconsistent or too slow to be practical, but they're not far off! I have hope that newer, better trained, more compact models will be able to handle the work load on my hardware in the near future. For now I am pursing other options for my home grown AI assistant's long term memory system, but I'll likely return to this before long.
 
+## Update Late January 2025 - New Deepseek Models
+I thought it wouldn't be long before more capable models were available and here they are! I tested this out with the new DeepSeek R1 Qwen 32B distill, and a variation of it, FuseAIs merge of that model with Sky-T1 and QwQ. I haven't usually found merges to be too helpful, but this one is exceptional!
+
+I first ran the models as I did before, with json grammar enforcement. The results were marginally better than the other models I tested. An improvement, but not huge. Then I realized the json enforcement could mess with the models' reasoning ability. The FuseAI model really did a nice job reasoning through the steps, and even when it errored (missed duplicate edges) I could see why in the output. The wording of the prompts threw it off. The plain Deepseek model struggled with the json, which was surprising to me, and did less reasoning about each step. More details below.
+
 # Results
 I don't exactly have the best AI rig. This is all done on my Mac Pro M2 with 32GB of unified ram. I tried a variety models and quant sizes. I'll summarize how each did below.
 
@@ -125,8 +130,28 @@ https://huggingface.co/anthracite-org/magnum-v4-22b-gguf
 * [Magnum 22B Q8](https://huggingface.co/anthracite-org/magnum-v4-22b-gguf)
 * [Qwen 2.5 14B](https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/tree/main)
 * [Nemotron-70B-Instruct-HF-IQ2_M](https://huggingface.co/bartowski/Llama-3.1-Nemotron-70B-Instruct-HF-GGUF/tree/main)
+* [FuseO1-DeekSeekR1-QwQ-SkyT1-32B-Preview-Q4_K_M](https://huggingface.co/bartowski/FuseO1-DeekSeekR1-QwQ-SkyT1-32B-Preview-GGUF)
+* [DeepSeek-R1-Distill-Qwen-32B-Q4_K_M](https://huggingface.co/bartowski/DeepSeek-R1-Distill-Qwen-32B-GGUF)
 
 For comparison to the graphs below, [here are the Graphiti docs](https://help.getzep.com/graphiti/graphiti/adding-episodes) which show an ideal version of the graph that should be produced by the sample app.
+
+## FuseO1-DeekSeekR1-QwQ-SkyT1-32B-Preview-Q4_K_M
+Runtime ~7 minutes with json grammar, ~35 minutes without
+
+I ran this first with the json grammar. As with the Qwen R1 Distill model below, it performed moderatly better. With the grammar disabled, it was free to do a lot more thinking, and it produced the most thorough knowledge graph of any of the models I tested. It identitified more nodes and edges, came up with better valid/invalid dates on those edges (still not perfect) and deduped the nodes perfectly. It was the only model I tested that ID'd Harris' jobs as nodes.
+
+Even this model struggled with deduping edges, but in the thought process I could see how it got consfused based on the wording of the prompt. For example, when confronted with two edges about Harris's role as AG of California, one was phrased in the present tense, and one showed the end date of her tenure. Since the prompt to consider differences in time, and one as past, one present, it considered them different edges. After updating the edges with new info, Graphiti never asked it to dedup those edges again. With some prompt and process tweaks, I think this model would get it 100%. The time it took makes it kind of unusable for this purpose until I can get better hardware for it.
+
+<img width="956" alt="fuseAi_32b_q4_k_m_no_grammar" src="https://github.com/user-attachments/assets/6502500a-cf3e-46f5-9d0b-e87a96fa6b63" />
+
+
+## DeepSeek-R1-Distill-Qwen-32B-Q4_K_M
+Runtime ~7 minutes (with jason grammar)
+
+On average it's marginal improvement over the other models tested below. It was better at setting valid/invalid dates for edges, but still struggled to dedupe edges, so the graph below is typical in that is has two edges from Kamala Harris to California for "worked as AG". One has correct valid/invalide dates, and one doesn't. Not bad overall, but the bigger problem was I did not restrict it with the json grammar, it sometimes produced incorrect json, invalid syntax or json that didn't follow the specified schema. So in several tries it never completed the graph. Again, with some tweaks to the Graphiti prompts I think this model could quite a bit better.
+
+<img width="884" alt="deepseek_qwen_r1_q4km_grammar" src="https://github.com/user-attachments/assets/17f0c07a-7bd1-47d3-98ba-cc8ea1f65565" />
+
 
 ## Magnum 12B_Q8
 Runtime -2 minutes.
