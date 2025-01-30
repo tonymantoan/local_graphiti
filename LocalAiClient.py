@@ -66,6 +66,7 @@ class LocalAiClient(LLMClient):
 
         super().__init__(config)
         self.base_url = config.base_url
+        self.grammar_content = ''
 
         if grammar_file is not None:
             self.read_grammar_file( grammar_file )
@@ -101,7 +102,7 @@ class LocalAiClient(LLMClient):
 
     def execute_llm_query(self, messages: list[Message]) -> dict[str, typing.Any]:
         print( f'Generate Local llm response for prompts:' )
-        full_prompt = self.format_prompt_for_mistral( messages )
+        full_prompt = self.format_prompt_for_chatml( messages )
         # full_prompt = self.format_prompt_for_chatml( messages )
         print( f'Full prompt is: {full_prompt}' )
 
@@ -144,3 +145,15 @@ class LocalAiClient(LLMClient):
 
         extra_inst = ""
         return f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{instructions}\n{extra_inst}\n<|im_end|>"
+
+    def format_prompt_for_deepseek(self, messages: list[Message]) -> str:
+            # <|im_start|>system<|im_sep|>{system_prompt}<|im_end|> <|im_start|>user<|im_sep|>{prompt}<|im_end|>
+            system_prompt = ""
+            instructions = ""
+            for m in messages:
+                if m.role == 'system':
+                    system_prompt = system_prompt + m.content + "\n"
+                else:
+                    instructions = instructions + m.content + "\n"
+
+            return f"{system_prompt}<｜end▁of▁sentence｜><|user|>{instructions}<｜Assistant｜>"
